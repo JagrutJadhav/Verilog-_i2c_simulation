@@ -10,7 +10,7 @@ wire [8:0] readdata;
            
  reg [5:0] address = 6'b111001;
  reg [6:0] addressreg;
- reg [2:0] trig = 2'b00;
+ reg [2:0] trigg = 2'b00;
  reg startbit= 1'b0,stopbit=1'b1,rw,ack;
  reg [15:0] count=16'd0; 
 initial ack = 1'b1;
@@ -23,12 +23,12 @@ i2c_master #(10) i2c(.clk(clk),
 always @ (posedge sclk)begin
 enable <= 1'b1;
 ack <= 1'b1;
-case (trig)
+case (trigg)
 2'b00 : begin   
          if (sda == startbit)
-            trig <= 2'b01;  
+            trigg <= 2'b01;  
         end
-2'b01 : begin #300;
+2'b01 : begin 
          addressreg[count] <= sda; 
          //$display("%b",sda);
             if (count >= 16'd7 ) begin
@@ -40,9 +40,9 @@ case (trig)
                         $display("entered in ack");
                         rw <= addressreg[6];
                         //sda <= ack;
-                        trig <= 2'b10;
+                        trigg <= 2'b10;
                     end
-                    else trig <= 2'b00;   
+                    else trigg <= 2'b00;   
                 
                end
             else
@@ -50,7 +50,7 @@ case (trig)
 
         end
         
-2'b10 : $display ("ooooooooooooo");
+2'b10 : $display ("");
         
  endcase
 end
