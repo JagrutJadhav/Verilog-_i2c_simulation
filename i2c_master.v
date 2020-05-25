@@ -8,7 +8,8 @@ module i2c_master #(parameter clkfreq=10)(
     );
   reg [15:0] count ;
   reg [7:0]send;
-  reg ack,dout;
+  wire ack = 1'b1,sig = 1'b1;
+  reg dout = 1'bz,flag = 1'b0;
   reg rw = 1'b0;
   reg [1:0] trig = 2'b00;
   reg [5:0] address = 6'b111001; ////address of slave
@@ -18,8 +19,7 @@ module i2c_master #(parameter clkfreq=10)(
 
   initial begin
     sclk = 1'b0;
-    ack= 1'b1;
-    dout = 1'b1;
+    dout = 1'bz;
     count =16'd0;
     send = 7'd0;
   end
@@ -36,9 +36,9 @@ module i2c_master #(parameter clkfreq=10)(
  
  
  always @ (posedge sclk) begin:datastart    
-   ack <= 1'b1;
+   //ack <= 1'b1;
    if (enable) begin
-   dout <= 1'b1;
+   //dout <= 1'b1;
    
     case(trig)
     2'b00: begin
@@ -49,7 +49,8 @@ module i2c_master #(parameter clkfreq=10)(
             if (send>=8'd8) begin
             $display ("address  = %b", concatadd);
                  trig <= 2'b01;
-                 dout <= 1'bz;
+                 dout <= 1'b1;
+                 //flag <= 1'b1;
                  rw <=1'b1;
                  send <= 8'd0;
              end
@@ -62,8 +63,9 @@ module i2c_master #(parameter clkfreq=10)(
             
             $display("ack = %d",ack);
                 if (ack == 1'b0) begin
-                   $display ("welsome to data receieveing case");
-                   ack <= 1'b1;
+                   $display ("welcome to data receieveing case");
+                   //ack <= 1'b1;
+                   flag <= 1'b0;
                    trig <= 2'b10; 
                 end 
                 else trig <= 2'b01;
@@ -103,7 +105,7 @@ module i2c_master #(parameter clkfreq=10)(
              //ack <= sda;
                 if (ack == 1'b0) begin
                    dout<= stopbit;
-                   ack <= 1'b1;
+                   //ack <= 1'b1;
                   trig <= 2'b00; 
                    dout<= 1'b1;
                 end
@@ -120,8 +122,8 @@ end
 ack <= sda;
 //$display("ack = %d",ack);
 end*/
-
-assign sda = (trig == 2'b01 || trig == 2'b11)?1'b1:dout;
-//assign sda = dout;
-
+assign sda = (dout)?sig:1'b0;
+assign sda = (trig == 2'b01 || trig == 2'b11)?1'bz:(dout);
+//assign ack = (sda==1'bx)?1'b0:sig;
+assign ack = (trig == 2'b01 || trig == 2'b11)?(sda?1'b1:1'b0):1'bz;
 endmodule
